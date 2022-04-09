@@ -10,5 +10,20 @@ require "saraid/refinements"
 # require "pry"
 # Pry.start
 
+require 'saraid/refinements/for_class/inspection'
+class Test
+  using Saraid::Refinements::ForClass::Inspection
+  saneify_inspection!
+
+  def initialize
+    @foo = :foo
+    @bar = :bar
+  end
+
+  def custom_inspection
+    'what ho'
+  end
+end
+
 require "irb"
 IRB.start(__FILE__)
