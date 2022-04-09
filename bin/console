@@ -11,6 +11,18 @@ require "saraid/refinements"
 # Pry.start
 
 require 'saraid/refinements/for_class/inspection'
+class TArray < Array
+  using Saraid::Refinements::ForClass::Inspection
+  saneify_inspection!
+
+  def initialize
+    #@foo = :foo
+  end
+
+  def custom_inspection
+    'yippee'
+  end
+end
 class Test
   using Saraid::Refinements::ForClass::Inspection
   saneify_inspection!

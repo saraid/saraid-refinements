@@ -6,6 +6,7 @@ module Saraid
           def saneify_inspection!
             class_eval do
               def inspect
+                $stderr.puts 'inspect'
                 postamble = ''
                 if respond_to?(:inspectable_attributes)
                   postamble << inspectable_attributes
@@ -20,23 +21,27 @@ module Saraid
                 "#<#{self.class}:#{'0x%x' % (object_id << 1)}#{postamble}>"
               end
 
-              def inspectable_attributes
-                instance_variables.map { _1.to_s[1..-1].to_sym }.sort
-              end
-
               def pretty_print(q)
+                $stderr.puts 'pretty print'
+                attributes_to_inspect =
+                  if respond_to?(:inspectable_attributes)
+                    inspectable_attributes.map { "@#{_1}" }
+                  else
+                    instance_variables.sort
+                  end
+
                 q.object_address_group(self) do
-                  q.seplist(inspectable_attributes, lambda { q.text ',' }) do |ivar|
+                  q.seplist(attributes_to_inspect, lambda { q.text ',' }) do |ivar|
                     q.breakable
                     ivar = ivar.to_s if Symbol === ivar
                     q.text ivar
                     q.text '='
                     q.group(1) {
                       q.breakable ''
-                      q.pp(instance_eval("@#{ivar}"))
+                      q.pp(instance_eval(ivar))
                     }
                   end
-                  q.text custom_inspection if respond_to?(:custom_inspection)
+                  q.text custom_inspection.prepend(' ') if respond_to?(:custom_inspection)
                 end
               end
             end
