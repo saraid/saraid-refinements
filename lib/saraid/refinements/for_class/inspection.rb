@@ -6,7 +6,6 @@ module Saraid
           def saneify_inspection!
             class_eval do
               def inspect
-                $stderr.puts 'inspect'
                 postamble = ''
                 if respond_to?(:inspectable_attributes)
                   postamble << inspectable_attributes
@@ -22,10 +21,12 @@ module Saraid
               end
 
               def pretty_print(q)
-                $stderr.puts 'pretty print'
                 attributes_to_inspect =
                   if respond_to?(:inspectable_attributes)
-                    inspectable_attributes.map { "@#{_1}" }
+                    inspectable_attributes.map do |attr|
+                      next attr.to_s if respond_to?(attr)
+                      next "@#{attr}" if instance_variables.include?(attr)
+                    end
                   else
                     instance_variables.sort
                   end
@@ -41,7 +42,11 @@ module Saraid
                       q.pp(instance_eval(ivar))
                     }
                   end
-                  q.text custom_inspection.prepend(' ') if respond_to?(:custom_inspection)
+
+                  if respond_to?(:custom_inspection)
+                    q.breakable
+                    q.text custom_inspection
+                  end
                 end
               end
             end
